@@ -8,11 +8,13 @@ from store.views.auth     import RegisterView, LogoutView, CustomTokenView
 from store.views.user     import UserViewSet
 from store.views.category import CategoryViewSet
 from store.views.product  import ProductViewSet
+from store.views.order    import OrderViewSet
 
 router = DefaultRouter()
 router.register('users',      UserViewSet,     basename='user')
 router.register('categories', CategoryViewSet, basename='category')
 router.register('products',   ProductViewSet,  basename='product')
+router.register('orders',     OrderViewSet,    basename='order')
 
 urlpatterns = [
     path('health/',             health_check),
