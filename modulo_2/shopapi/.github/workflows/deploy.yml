@@ -1,0 +1,30 @@
+name: ShopAPI — CI/CD Pipeline
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    name: Deploy to Hetzner VM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPSSSHKEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to VM
+        run: |
+          ssh root@${{ secrets.VPS_HOST }} << 'ENDSSH'
+            cd ${{ secrets.DEPLOY_PATH }}
+            git pull origin main
+            /root/.local/bin/uv sync
+            /root/.local/bin/uv run python manage.py migrate --noinput
+            /root/.local/bin/uv run python manage.py collectstatic --noinput
+            systemctl restart gunicorn-shopapi
+          ENDSSH
